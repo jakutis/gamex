@@ -4,16 +4,18 @@ Handlebars.registerHelper("log", function(optionalValue) {
 });
 
 if (Meteor.isClient) {
-    if(typeof Session.get('handle') === 'undefined') {
-        Session.set('handle', 'User' + Math.random());
-    }
     if(typeof Session.get('story') === 'undefined') {
-        Session.set('story', Stories.findOne()._id);
+        Tracker.autorun(function() {
+            var story = Stories.findOne();
+            if(typeof story !== 'undefined') {
+                Session.set('story', story._id);
+            }
+        });
     }
 
     Template.greeting.helpers({
         user: function () {
-            return Session.get('handle');
+            return Meteor.user().email;
         }
     });
     var maxLockTime = 5000;
@@ -24,12 +26,12 @@ if (Meteor.isClient) {
     Template.story.helpers({
         addingDisabled: function () {
             var lock = Stories.findOne(Session.get('story')).lock;
-            return (lock && lock.author !== Session.get('handle')) ? 'disabled' : '';
+            return (lock && lock.author !== Meteor.userId()) ? 'disabled' : '';
         },
         timeoutValue: function() {
             time.depend();
             var lock = Stories.findOne(Session.get('story')).lock;
-            if(!lock || lock.author === Session.get('handle')) {
+            if(!lock || lock.author === Meteor.userId()) {
                 return;
             }
             var timeUsed = Date.now() - lock.time;
@@ -64,7 +66,7 @@ if (Meteor.isClient) {
                         words: Stories.findOne(Session.get('story')).words
                     };
                     sentence.words.push({
-                        handle: Session.get('handle'),
+                        handle: Meteor.userId(),
                         word: word
                     });
                     Stories.update(Session.get('story'), {
@@ -83,17 +85,18 @@ if (Meteor.isClient) {
                         },
                         $push: {
                             words: {
-                                handle: Session.get('handle'),
+                                handle: Meteor.userId(),
                                 word: word
                             }
                         }
                     });
                 }
             } else if (!Stories.findOne(Session.get('story')).lock) {
+                console.log('locking', Meteor.userId());
                 Stories.update(Session.get('story'), {
                     $set: {
                         lock: {
-                            author: Session.get('handle'),
+                            author: Meteor.userId(),
                             time: Date.now()
                         }
                     }
