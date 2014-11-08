@@ -6,6 +6,12 @@
     {{> story}}
 </body>
 <template name="story">
+    <p>Words in total: {{story.words.length}}</p>
+    <p>Last word:</p>
+    {{#with lastWord}}
+        {{> word}}
+    {{/with}}
+    <p>All words:</p>
     {{#each story.words}}
         {{> word}}
     {{/each}}

@@ -45,6 +45,10 @@ if (Meteor.isClient) {
 
             return {'value': timeRemaining};
         },
+        lastWord: function () {
+            var story = Stories.findOne(Session.get('story'));
+            return story.words[story.words.length - 1];
+        },
         story: function () {
             return Stories.findOne(Session.get('story'));
         }
