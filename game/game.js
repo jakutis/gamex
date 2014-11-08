@@ -1,7 +1,4 @@
 Stories = new Mongo.Collection("stories");
-Handlebars.registerHelper("log", function(optionalValue) {
-    console.log("logging: ", optionalValue, "this", this);
-});
 
 if (Meteor.isClient) {
     if(typeof Session.get('story') === 'undefined') {
@@ -13,11 +10,6 @@ if (Meteor.isClient) {
         });
     }
 
-    Template.greeting.helpers({
-        user: function () {
-            return Meteor.user().email;
-        }
-    });
     var maxLockTime = 5000;
     var time = new Tracker.Dependency();
     setInterval(function() {
@@ -26,12 +18,12 @@ if (Meteor.isClient) {
     Template.story.helpers({
         addingDisabled: function () {
             var lock = Stories.findOne(Session.get('story')).lock;
-            return (lock && lock.author !== Meteor.userId()) ? 'disabled' : '';
+            return (lock && lock.author._id !== Meteor.userId()) ? 'disabled' : '';
         },
         timeoutValue: function() {
             time.depend();
             var lock = Stories.findOne(Session.get('story')).lock;
-            if(!lock || lock.author === Meteor.userId()) {
+            if(!lock || lock.author._id === Meteor.userId()) {
                 return;
             }
             var timeUsed = Date.now() - lock.time;
@@ -66,7 +58,7 @@ if (Meteor.isClient) {
                         words: Stories.findOne(Session.get('story')).words
                     };
                     sentence.words.push({
-                        handle: Meteor.userId(),
+                        author: Meteor.user(),
                         word: word
                     });
                     Stories.update(Session.get('story'), {
@@ -85,18 +77,17 @@ if (Meteor.isClient) {
                         },
                         $push: {
                             words: {
-                                handle: Meteor.userId(),
+                                author: Meteor.user(),
                                 word: word
                             }
                         }
                     });
                 }
             } else if (!Stories.findOne(Session.get('story')).lock) {
-                console.log('locking', Meteor.userId());
                 Stories.update(Session.get('story'), {
                     $set: {
                         lock: {
-                            author: Meteor.userId(),
+                            author: Meteor.user(),
                             time: Date.now()
                         }
                     }

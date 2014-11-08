@@ -3,7 +3,7 @@
 </head>
 <body>
     {{> loginButtons}}
-    {{> greeting}}
+    <p>Welcome to the game!</p>
     {{> story}}
 </body>
 <template name="story">
@@ -22,15 +22,12 @@
     {{/each}}
     <input {{addingDisabled}} {{timeoutValue}}>
     {{#if story.lock}}
-        <p>Locked by: {{story.lock.author}}</p>
+        <p>Locked by: {{story.lock.author.emails.[0].address}}</p>
     {{/if}}
 </template>
 <template name="sentence">
-    {{#each words}} <span title={{handle}}>{{word}}</span>{{/each}}
+    {{#each words}} <span title={{author.emails.[0].address}}>{{word}}</span>{{/each}}
 </template>
 <template name="word">
     <p>{{word}}</p>
-</template>
-<template name="greeting">
-    <p>Welcome to the game, {{user}}!</p>
 </template>
