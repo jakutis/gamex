@@ -6,6 +6,10 @@
     {{> story}}
 </body>
 <template name="story">
+    <p>Sentences in total: {{story.sentences.length}}</p>
+    {{#each story.sentences}}
+        {{> sentence}}.
+    {{/each}}
     <p>Words in total: {{story.words.length}}</p>
     <p>Last word:</p>
     {{#with lastWord}}
@@ -19,6 +23,9 @@
     {{#if story.lock}}
         <p>Locked by: {{story.lock.author}}</p>
     {{/if}}
+</template>
+<template name="sentence">
+    {{#each words}} {{word}}{{/each}}
 </template>
 <template name="word">
     <p>{{word}}</p>

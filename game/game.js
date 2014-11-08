@@ -55,20 +55,40 @@ if (Meteor.isClient) {
     });
     Template.story.events({
         'keypress input': function (event) {
-            var input = event.target;
+            var word = event.target.value.trim();
             if (event.keyCode === 13) {
-                Stories.update(Session.get('story'), {
-                    $set: {
-                        lock: null
-                    },
-                    $push: {
-                        words: {
-                            handle: Session.get('handle'),
-                            word: input.value
+                event.target.value = '';
+                if(word.charAt(word.length - 1) === '.') {
+                    word = word.substr(0, word.length - 1);
+                    var sentence = {
+                        words: Stories.findOne(Session.get('story')).words
+                    };
+                    sentence.words.push({
+                        handle: Session.get('handle'),
+                        word: word
+                    });
+                    Stories.update(Session.get('story'), {
+                        $set: {
+                            lock: null,
+                            words: []
+                        },
+                        $push: {
+                            sentences: sentence
                         }
-                    }
-                });
-                input.value = '';
+                    });
+                } else {
+                    Stories.update(Session.get('story'), {
+                        $set: {
+                            lock: null
+                        },
+                        $push: {
+                            words: {
+                                handle: Session.get('handle'),
+                                word: word
+                            }
+                        }
+                    });
+                }
             } else if (!Stories.findOne(Session.get('story')).lock) {
                 Stories.update(Session.get('story'), {
                     $set: {
@@ -88,6 +108,7 @@ if (Meteor.isServer) {
         if(Stories.find().count() === 0) {
             Stories.insert({
                 lock: null,
+                sentences: [],
                 words: []
             })
         }
