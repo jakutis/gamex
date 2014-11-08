@@ -6,10 +6,13 @@
     {{> story}}
 </body>
 <template name="story">
-    {{#each words}}
+    {{#each story.words}}
         {{> word}}
     {{/each}}
-    <input>
+    <input {{addingDisabled}}>
+    {{#if story.locking.enabled}}
+        <p>Locked by: {{story.locking.author}}</p>
+    {{/if}}
 </template>
 <template name="word">
     <p>{{word}}</p>
