@@ -1,0 +1,19 @@
+<head>
+    <title>game</title>
+</head>
+<body>
+    {{> greeting}}
+    {{> story}}
+</body>
+<template name="story">
+    {{#each words}}
+        {{> word}}
+    {{/each}}
+    <input>
+</template>
+<template name="word">
+    <p>{{word}}</p>
+</template>
+<template name="greeting">
+    <p>Welcome to the game, {{user}}!</p>
+</template>
