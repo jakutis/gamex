@@ -25,7 +25,7 @@
     {{/if}}
 </template>
 <template name="sentence">
-    {{#each words}} {{word}}{{/each}}
+    {{#each words}} <span title={{handle}}>{{word}}</span>{{/each}}
 </template>
 <template name="word">
     <p>{{word}}</p>
