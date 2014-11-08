@@ -16,10 +16,34 @@ if (Meteor.isClient) {
             return Session.get('handle');
         }
     });
+    var maxLockTime = 5000;
+    var time = new Tracker.Dependency();
+    setInterval(function() {
+        time.changed();
+    }, 1000);
     Template.story.helpers({
         addingDisabled: function () {
-            var locking = Stories.findOne(Session.get('story')).locking;
-            return (locking.enabled && locking.author !== Session.get('handle')) ? 'disabled' : '';
+            var lock = Stories.findOne(Session.get('story')).lock;
+            return (lock && lock.author !== Session.get('handle')) ? 'disabled' : '';
+        },
+        timeoutValue: function() {
+            time.depend();
+            var lock = Stories.findOne(Session.get('story')).lock;
+            if(!lock || lock.author === Session.get('handle')) {
+                return;
+            }
+            var timeUsed = Date.now() - lock.time;
+            var timeRemaining = maxLockTime - timeUsed;
+            if(timeRemaining < 0) {
+                Stories.update(Session.get('story'), {
+                    $set: {
+                        lock: null
+                    }
+                });
+                return;
+            }
+
+            return {'value': timeRemaining};
         },
         story: function () {
             return Stories.findOne(Session.get('story'));
@@ -31,10 +55,7 @@ if (Meteor.isClient) {
             if (event.keyCode === 13) {
                 Stories.update(Session.get('story'), {
                     $set: {
-                        locking: {
-                            enabled: false,
-                            author: null
-                        }
+                        lock: null
                     },
                     $push: {
                         words: {
@@ -44,12 +65,12 @@ if (Meteor.isClient) {
                     }
                 });
                 input.value = '';
-            } else {
+            } else if (!Stories.findOne(Session.get('story')).lock) {
                 Stories.update(Session.get('story'), {
                     $set: {
-                        locking: {
-                            enabled: true,
-                            author: Session.get('handle')
+                        lock: {
+                            author: Session.get('handle'),
+                            time: Date.now()
                         }
                     }
                 });
@@ -62,10 +83,7 @@ if (Meteor.isServer) {
     Meteor.startup(function () {
         if(Stories.find().count() === 0) {
             Stories.insert({
-                locking: {
-                    enabled: false,
-                    author: null
-                },
+                lock: null,
                 words: []
             })
         }

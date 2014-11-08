@@ -9,9 +9,9 @@
     {{#each story.words}}
         {{> word}}
     {{/each}}
-    <input {{addingDisabled}}>
-    {{#if story.locking.enabled}}
-        <p>Locked by: {{story.locking.author}}</p>
+    <input {{addingDisabled}} {{timeoutValue}}>
+    {{#if story.lock}}
+        <p>Locked by: {{story.lock.author}}</p>
     {{/if}}
 </template>
 <template name="word">
