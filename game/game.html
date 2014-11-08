@@ -2,27 +2,36 @@
     <title>game</title>
 </head>
 <body>
-    {{> loginButtons}}
-    <p>Welcome to the game!</p>
-    {{> story}}
+    {{> main}}
 </body>
+<template name="main">
+    {{> loginButtons}}
+    {{#if user}}
+        <p>Welcome to the game!</p>
+    {{/if}}
+</template>
 <template name="story">
-    <p>Sentences in total: {{story.sentences.length}}</p>
-    {{#each story.sentences}}
-        {{> sentence}}.
-    {{/each}}
-    <p>Words in total: {{story.words.length}}</p>
-    <p>Last word:</p>
-    {{#with lastWord}}
-        {{> word}}
-    {{/with}}
-    <p>All words:</p>
-    {{#each story.words}}
-        {{> word}}
-    {{/each}}
-    <input {{addingDisabled}} {{timeoutValue}}>
-    {{#if story.lock}}
-        <p>Locked by: {{story.lock.author.emails.[0].address}}</p>
+    {{#if user}}
+        <p><a href="/">Go back to story list</a></p>
+        <hr>
+        {{#each story.sentences}}
+            {{> sentence}}.
+        {{/each}}
+        <hr>
+        <p>Next sentence: words in total: {{story.words.length}}, last word: {{lastWord.word}}</p>
+        <input {{addingDisabled}} {{timeoutValue}}>
+        {{#if story.lock}}
+            <p>Locked by: {{story.lock.author.emails.[0].address}}</p>
+        {{/if}}
+    {{/if}}
+</template>
+<template name="storyList">
+    {{#if user}}
+        <p>Stories:</p>
+        {{#each stories}}
+            <p><a href="/stories/{{_id}}">{{title}}</a></p>
+        {{/each}}
+        <p><input placeholder="begin new story"></p>
     {{/if}}
 </template>
 <template name="sentence">

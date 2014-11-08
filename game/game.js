@@ -1,5 +1,18 @@
 Stories = new Mongo.Collection("stories");
 
+Router.route('/', function () {
+    this.render('storyList');
+}, {
+    name: 'list'
+});
+
+Router.route('/stories/:_id', function () {
+    var item = Stories.findOne({_id: this.params._id});
+    this.render('story', {data: item});
+}, {
+    name: 'single'
+});
+
 if (Meteor.isClient) {
     if(typeof Session.get('story') === 'undefined') {
         Tracker.autorun(function() {
@@ -15,7 +28,42 @@ if (Meteor.isClient) {
     setInterval(function() {
         time.changed();
     }, 1000);
+
+    Template.main.helpers({
+        user: function () {
+            return Meteor.user();
+        }
+    });
+    Template.storyList.helpers({
+        user: function() {
+            return Meteor.user();
+        },
+        stories: function() {
+            return Stories.find();
+        }
+    });
+    Template.storyList.events({
+        'keypress input': function (event) {
+            if (event.keyCode === 13) {
+                Stories.insert({
+                    title: event.target.value,
+                    lock: null,
+                    sentences: [],
+                    words: []
+                }, function(err, id) {
+                    Router.go('single', {
+                        _id: id
+                    });
+                });
+                event.target.value = '';
+            }
+        }
+    });
+
     Template.story.helpers({
+        user: function() {
+            return Meteor.user();
+        },
         addingDisabled: function () {
             var lock = Stories.findOne(Session.get('story')).lock;
             return (lock && lock.author._id !== Meteor.userId()) ? 'disabled' : '';
