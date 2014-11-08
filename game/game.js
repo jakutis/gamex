@@ -102,15 +102,3 @@ if (Meteor.isClient) {
         }
     });
 }
-
-if (Meteor.isServer) {
-    Meteor.startup(function () {
-        if(Stories.find().count() === 0) {
-            Stories.insert({
-                lock: null,
-                sentences: [],
-                words: []
-            })
-        }
-    });
-}
